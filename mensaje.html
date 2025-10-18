@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat en tiempo real</title>
+  <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f2f2f2;
+    }
+
+    #chat-container {
+      width: 100%;
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #messages {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #fafafa;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 5px;
+      background: #e0e0e0;
+      border-radius: 4px;
+    }
+
+    #input-message {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <h2>Chat en Tiempo Real</h2>
+    <div id="messages"></div>
+    <input type="text" id="input-message" placeholder="Escribe un mensaje y presiona Enter..." />
+  </div>
+
+  <script>
+    // Pusher setup
+    Pusher.logToConsole = true;
+
+    var pusher = new Pusher('92e747b6f7fc4ccfa198', {
+      cluster: 'us2'
+    });
+
+    const channel = pusher.subscribe('my-channel');
+    channel.bind('my-event', function(data) {
+      const messageContainer = document.getElementById('messages');
+      const msg = document.createElement('div');
+      msg.className = 'message';
+      msg.textContent = data.message || "Mensaje vacío";
+      messageContainer.appendChild(msg);
+      messageContainer.scrollTop = messageContainer.scrollHeight; // Auto scroll
+    });
+
+    // Envío de mensaje con Enter
+    const input = document.getElementById('input-message');
+    input.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const message = input.value.trim();
+        if (message !== '') {
+          alert('Enviando mensaje');
+
+          // Aquí deberías emitir el mensaje al servidor para que lo reenvíe vía Pusher.
+          // Por ahora solo hacemos fetch simulado (o puedes implementar tu backend con Express, Laravel, etc.)
+          fetch('https://your-server.com/send-message', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: message })
+          }).catch(err => console.error('Error al enviar:', err));
+
+          input.value = '';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
